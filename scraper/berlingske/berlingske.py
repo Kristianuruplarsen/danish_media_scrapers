@@ -11,8 +11,6 @@ import pandas as pd
 from time import sleep, time
 from bs4 import BeautifulSoup
 
-from scraper.common import *
-
 BASE = 'https://www.b.dk'
 
 
@@ -147,7 +145,7 @@ def get_all_content(year,
     fullset = get_article_content(article_links[0])
 
     if sample_articles:
-        print(f"Sampling a share {samplefrac} of all avaliable links")
+        print(f"Sampling a share {samplefrac_articles} of all avaliable links")
         iter = random.sample(article_links[1:], round(len(article_links[1:])*samplefrac_articles))
     else:
         iter = article_links[1:]
