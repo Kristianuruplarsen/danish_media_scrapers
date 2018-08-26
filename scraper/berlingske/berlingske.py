@@ -28,7 +28,7 @@ def get(url, attempts=5, check_function=lambda x: x.ok):
     for iteration in range(attempts):
         try:
             # add ratelimit function call here
-            sleep(2)
+            sleep(3)
 
             t0 = time()
             response = requests.get(url)
@@ -150,12 +150,15 @@ def get_all_content(year,
     else:
         iter = article_links[1:]
 
+    print("Sleeping for a full minute")
+    sleep(60)
     print(f"There are {len(iter)} articles to get in month {month} {year}.")
     for link in iter:
         fullset = pd.concat([fullset, get_article_content(link)])
 
         if i % 50 == 0 and i != 0:
             fullset.to_csv('berlingske.csv', index = False)
+            sleep(30)
         i += 1
 
     fullset.to_csv('berlingske_final.csv', index = False)
