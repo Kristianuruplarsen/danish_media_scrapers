@@ -7,7 +7,7 @@ import random
 import pandas as pd
 from time import sleep, time
 from bs4 import BeautifulSoup
-
+import re
 
 BASE = 'https://www.politiken.dk'
 
@@ -97,23 +97,23 @@ def get_article_content(article_link):
     soup = BeautifulSoup(page.text, 'lxml')
 
     try:
-        headline = soup.find('h1').getText().strip()
+        headline = soup.find(attrs = {'class': re.compile('article__title')}).getText().strip()
     except:
         headline = None
     try:
-        subhead = soup.find('h2').getText().strip()
+        subhead = soup.find(attrs = {'class': re.compile('article__summary')}).getText().strip()
     except:
         subhead = None
     try:
-        publishdate = soup.find('span', {'class':'article__timestamp time time--large time--uppercase'}).getText().strip()
+        publishdate = soup.find(attrs= {'class':re.compile('article__timestamp')}).getText().strip()
     except:
         publishdate = None
     try:
-        articlebody = '\n'.join([s.getText().strip() for s in soup.find('div', {'data-category':'Article body'}).find_all('p')])
+        articlebody = soup.find('div', {'data-category': 'Article body'}).find('p', {'class': 'body__p '}).getText()
     except:
         articlebody = None
     try:
-        author = soup.find('div', {'class':'byline'}).getText().strip()
+        author = soup.find(attrs = {'class':re.compile('byline')}).getText().strip()
     except:
         author = None
 
@@ -127,23 +127,29 @@ def get_article_content(article_link):
 
 
 
-def get_all_content(year, month, sample = False, samplefrac = None):
+def get_all_content(year,
+                    month,
+                    sample_days = False, # Sample which days in the month to get news from?
+                    samplefrac_days = None,
+                    sample_articles = False, # Sample the articles within each day? 
+                    samplefrac_articles = None
+                    ):
     """ Get all media content from berlingske in a specified month and year.
     """
     print(" --- GETTING ARTICLE LINKS --- ")
-    article_links = get_all_article_links(year, month, sample, samplefrac)
+    article_links = get_all_article_links(year, month, sample_days, samplefrac_days)
     print("Got all parts. Continuing.")
 
     i = 0
     fullset = get_article_content(article_links[0])
-    print(f"There are {len(fullset)} articles to get in month {month} {year}.")
 
-    if sample:
+    if sample_articles:
         print(f"Sampling a share {samplefrac} of all avaliable links")
-        iter = random.sample(article_links[1:], round(len(article_links[1:])*samplefrac))
+        iter = random.sample(article_links[1:], round(len(article_links[1:])*samplefrac_articles))
     else:
         iter = article_links[1:]
 
+    print(f"There are {len(iter)} articles to get in month {month} {year}.")
     for link in iter:
         fullset = pd.concat([fullset, get_article_content(link)])
 

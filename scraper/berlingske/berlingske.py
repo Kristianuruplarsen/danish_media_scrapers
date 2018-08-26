@@ -11,6 +11,8 @@ import pandas as pd
 from time import sleep, time
 from bs4 import BeautifulSoup
 
+from scraper.common import *
+
 BASE = 'https://www.b.dk'
 
 
@@ -128,23 +130,29 @@ def get_article_content(article_link):
 
 
 
-def get_all_content(year, month, sample = False, samplefrac = None):
+def get_all_content(year,
+                    month,
+                    sample_days = False, # Sample days in the month?
+                    samplefrac_days = None,
+                    sample_articles = False,  # Sample articles within each day?
+                    samplefrac_articles = None
+                    ):
     """ Get all media content from berlingske in a specified month and year.
     """
     print(" --- GETTING ARTICLE LINKS --- ")
-    article_links = get_all_article_links(year, month, sample, samplefrac)
+    article_links = get_all_article_links(year, month, sample_days, samplefrac_days)
     print("Got all parts. Continuing.")
 
     i = 0
     fullset = get_article_content(article_links[0])
-    print(f"There are {len(fullset)} articles to get in month {month} {year}.")
-    
-    if sample:
+
+    if sample_articles:
         print(f"Sampling a share {samplefrac} of all avaliable links")
-        iter = random.sample(article_links[1:], round(len(article_links[1:])*samplefrac))
+        iter = random.sample(article_links[1:], round(len(article_links[1:])*samplefrac_articles))
     else:
         iter = article_links[1:]
 
+    print(f"There are {len(iter)} articles to get in month {month} {year}.")
     for link in iter:
         fullset = pd.concat([fullset, get_article_content(link)])
 
